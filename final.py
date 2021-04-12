@@ -1,43 +1,9 @@
+#This class helps to store the list in the binary file with objects
 class Leaders:
     def __init__(self, name, score, date):
-        self.__name = name
-        self.__score = score
-        self.__date = date
-#This stuff was used when using a dictionary, I'll keep it just in case it's useful
-    #def setName(self, name):
-    #    self.__name = name
-    #def setScore(self, score):
-    #    self.__score = score
-    #def setDate(self, date):
-    #    self.__date = date
-    #def getName(self):
-    #    return self.__name
-    #def getScore(self):
-    #    return self.__score
-    #def getDate(self):
-    #    return self.__date
-    def __str__(self):
-        return f'{self.__name} -- {self.__score} -- {self.__date}'
-        #'Name: ' + self.__name + \
-            #'\nScore: ' + self.__score + \
-            #'\nDate: ' + self.__date
-                   
-
-#class PlayerScore:
-    #def __init__(self, password, strength):
-    #    self.__password = password
-    #    self.__strength = strength
-    #def setPass(self, password):
-    #    self.__password = password
-    #def setStr(self, strength):
-    #    self.__strength = strength
-    #def getPass(self):
-    #    return self.__password
-    #def getStr(self):
-    #    return self.__strength
-    #def __str__(self):
-    #    return 'Password: ' + self.__password + \
-    #           '\nPassword Strength: ' + self.__strength
+        self.name = name
+        self.score = score
+        self.date = date                   
 
 from datetime import datetime
 import random
@@ -50,16 +16,20 @@ playerSpec = 4
 EXIT = 5
 DEL = 6
 
-topFile = 'leaderboard.dat'
+#files to store information in
+topFile = 'leaderboard3.dat'
+playerFile = 'playerStat.dat'
 
 def main():
+    #retrieve lists from binary files
     leadList = getLeader()
+    #playHigh = getPlayerHigh()
     
     choice = 0
     while choice != EXIT:
         choice = getChoice()
         if choice == play:
-            playGame(leadList)
+            leadList = playGame(leadList)#, playHigh
         if choice == leader:
             showLeader(leadList)
         if choice == playerHigh:
@@ -69,19 +39,28 @@ def main():
         if choice == DEL:
             delete(leadList)
     saveLeaders(leadList)
+    #saveplayHigh(playHigh)
 
 def getLeader():
     try:
         infile = open(topFile, 'rb')
         leadList = pickle.load(infile)
+        print(leadList)
         infile.close()
     except:
         leadList = []
     return leadList
 
 #def getPlayerHigh():
+    #try:
+        #infile = open(playerFile, 'rb')
+        #playHigh = pickle.load(infile)
+        #infile.close()
+    #except:
+        #playHigh = []
+    #return playHigh
 
-    
+#Gets user choice for what to make the program do
 def getChoice():
     print()
     print('1. Play the game')
@@ -97,7 +76,8 @@ def getChoice():
     while choice < play or choice > DEL:
         choice = int(input('Enter a valid option: '))
     return choice
-        
+
+#Play the game
 def playGame(leadList):
     score = 0
     numObjects = 0
@@ -131,37 +111,42 @@ def playGame(leadList):
     #Prints info and adds it to the list
     print('Name: ', name, '\nScore: ',
           score, '\nDate: ', date)
-    leadClass = Leaders(name, score, date)#might not be needed
-    for x in leadList:#
-        numObjects += 1#
-    if numObjects < 5:#
-        leadList[name] = leadClass#--------- where leadClass.score >= min(list)
+    for x in leadList:
+        numObjects += 1
+    if numObjects < 5:
+        temp = Leaders(name, score, date)
+        leadList.append(temp)
         print('You are one of the first people on the leaderboard')
 
-    #add it, remove the min, then order it v
+    #add it, order it, then remove the min v
     else:
-        if score > leadList[name].score:
-            leadList[name] = leadClass 
-        #leadClass = Leaders(name, score, date)
+        tempList = []
+        for x in leadList:
+            tempList += x.score
         
-   # if leadList[score] >= min
-        
+        if score >= min(tempList):
+            temp = Leaders(name, score, date)
+            leadList.append(temp)
+            print('You made the leaderboard')
+            leadList = sort(leadList)
+            del leadList[5:]
+        else:
+            print("You didn't make the leaderboard")        
 
-
-#Displays the leaderboard
-#Might do it different so it can be sorted and displayed, or sort it somewhere else
+    return leadList
+#Displays the leaderboard correctly from the list, specifying what place each score is
 def showLeader(leadList):
-    #sort(leadList)
+    leadList = sort(leadList)
+    numbers = ['1st', '2nd', '3rd', '4th', '5th']
     for x in leadList:
-        print()
-        print(leadList.get(x, 'Invalid'))
+        print(numbers[0], ': ')
+        del numbers[0]
+        print(f'Name: {x.name}\nScore: {x.score}\nDate: {x.date}')
         print()
 
-#function for sorting list
-#def sort(leadList):
-    #leadList = sorted(leadList, key=lambda x: x.score, reverse=True)
-    #return leadList
-
+def sort(leadList):
+    leadList = sorted(leadList, key=lambda x: x.score, reverse=True)
+    return leadList
 #stores the high score for each player
 #def playerHigh():
 
@@ -173,7 +158,12 @@ def saveLeaders(leadList):
     pickle.dump(leadList, outFile)
     outFile.close()
 
-#temporary (for convenience)
+
+#def saveplayHigh(playHigh):
+    #outFile = open(playerFile, 'wb')
+    #pickle.dump(playHigh, outFile)
+    #outFile.close()
 def delete(leadList):
     leadList.clear()
 main()
+
