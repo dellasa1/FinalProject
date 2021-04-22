@@ -3,8 +3,8 @@ import random
 import pickle
 from tkinter import *
 import tkinter.messagebox
-global score
-score = 0
+#global final
+#final = 0
 
 #defines objects in the leaderboard list
 class Leaders:
@@ -34,10 +34,12 @@ class PlayerScore:
         return 'Name: ' + self.name + \
             '\nScore: ' + self.score + \
                 '\nDate: ' + self.date
-#This gui helps to display the game in a user interface
-#First initialize creates a dropdown menu
+
 class myGUI(Frame):
     def __init__(self, master=None):
+        #global self.final
+        self.final = tkinter.IntVar()
+        self.date = tkinter.StringVar()
         Frame.__init__(self, master)
         self.master = master
 
@@ -48,17 +50,24 @@ class myGUI(Frame):
         fileMenu.add_command(label="Play", command=self.game)
         fileMenu.add_command(label="Exit", command=self.master.destroy)
         menu.add_cascade(label="File", menu=fileMenu)
-#helps to display score after playing the game
+
         self.frame = tkinter.Frame(self.master)
 
         self.var = tkinter.StringVar()
         self.score = tkinter.Label(self.frame, textvariable=self.var)
 
         self.score.pack(side='left')#close, ask hardy to look at it
+        
+        #self.name1 = tkinter.Label(self.frame, text="Enter name before playing")
+        #self.name1in = tkinter.Entry(self.frame, width=10)
+        
+        #self.name1.pack(side='left')
+        #self.name1in.pack(side='left')
 
         self.frame.pack()
-#Gets user name and goes to game
-    def game(self):
+
+    def game(self):#, final
+        #self.final = final
         self.gameWindow = tkinter.Tk()
 
         self.frame1 = tkinter.Frame(self.gameWindow)
@@ -70,17 +79,39 @@ class myGUI(Frame):
 
         self.getName.pack(side='left')
         self.namein.pack(side='left')
-        
+
+        #self.coinFlip = tkinter.Label(self.frame3, text="Enter 'heads' or 'tails':")
+        #self.coinFlipGet = tkinter.Entry(self.frame3, width=5)
+
+        #self.coinFlip.pack(side='left')
+        #self.coinFlipGet.pack(side='left')
+
+        #self.flip = tkinter.Label(self.frame3, text="Enter 'heads' or 'tails': ")
+        #self.flipIn = tkinter.Entry(self.frame3, width=5)
         self.flipGo = tkinter.Button(self.frame3, text="Guess coin", command=self.getCoin)
 
+        #self.flip.pack(side='left')
+        #self.flipIn.pack(side='left')
         self.flipGo.pack(side='left')
         
         self.frame1.pack()
         self.frame3.pack()
-#guess the coin and goes to check if it's right
     def getCoin(self):
         self.getCoinWindow = tkinter.Tk()
-        
+
+        #self.getCoinFrame = tkinter.Frame(self.getCoinWindow)
+
+        #score = 0
+        #numObjects = 0
+        #playing = True
+        #self.getName2 = tkinter.Label(self.getCoinFrame, text="Enter player name (or nickname):")
+        #self.name = tkinter.Entry(self.getCoinFrame, width=12)
+
+        #self.getName2.pack(side='left')
+        #self.name.pack(side='left')
+
+        #self.getCoinFrame.pack()
+        #while playing:
         self.coinFrame = tkinter.Frame(self.getCoinWindow)
 
         self.coinFlip = tkinter.Label(self.coinFrame, text="Enter 'heads' or 'tails':")
@@ -96,47 +127,61 @@ class myGUI(Frame):
 
         self.coinFrame.pack()
         self.coinNext.pack()
-#this checks to see if the guess is correct
-#I'm trying to have it use a while loop but it hasn't been liking it
     def check(self):
-            
-        score = 0
+        self.temp = ''
+        #final = 0
+        playing = True
+        #while playing:
+
         flip = self.coinFlipGet.get()
-        
         coin = random.randint(1, 2)
-        
         if flip == 'heads':
             if coin == 1:
                 tkinter.messagebox.showinfo("That's correct!")
-                
-                score+=1
+                #correct = "That's correct!"
+                #self.final+=1
+                self.final.set(self.final.get() + 1)
+                #self.getCoin()
             elif coin == 2:
                 tkinter.messagebox.showinfo("That's incorrect!")
-                
+                #correct = "That's incorrect!"
                 playing = False
-                self.gameWindow.destroy()
+                self.getCoinWindow.destroy()
         elif flip == 'tails':
             if coin == 1:
                 tkinter.messagebox.showinfo("That's incorrect!")
-                
+                #correct = "That's incorrect!"
                 playing = False
-                self.gameWindow.destroy()
+                self.getCoinWindow.destroy()
             elif coin == 2:
                 tkinter.messagebox.showinfo("That's correct!")
-                
-                score+=1
-        else:
+                #correct = "That's correct!"
+                #self.final+=1
+                self.final.set(self.final.get() + 1)
+                #self.getCoin()
+        elif flip != 'heads' or flip != 'tails':
             tkinter.messagebox.showinfo("Try again")
-#This returns the info to the original window to display
-        now = datetime.now()
-        print()
-        date = str(now.strftime("%I:%M%p on %B %d, %Y"))
-        score = str(score)
-        name = self.namein.get()
-        self.temp = ('Name: ', name, '\nScore: ',
-          score, '\nDate: ', date)
-        self.var.set(str(self.temp))
-#Helps to set up dropdown menu in original window
+            #correct = "Try again"
+        if playing == False:
+
+            now = datetime.now()
+            print()
+            self.date.set(now.strftime("%I:%M%p on %B %d, %Y"))
+            date = str(self.date.get())
+            tempFinal = str(self.final.get())
+            name = self.namein.get()
+            self.temp = 'Name: ' + name + '\nScore: ' + tempFinal + '\nDate: ' + date
+            self.var.set(self.temp)
+            self.gameWindow.destroy()
+            #score = 0
+        else:
+            self.finalWindow = tkinter.Tk()
+            self.finalFrame = tkinter.Frame(self.finalWindow)
+            self.finalButton = tkinter.Button(self.finalFrame, text='Guess again', command=lambda: [self.getCoin, self.finalWindow.destroy()])
+            self.finalButton.pack(side='left')
+            self.finalFrame.pack()
+            
+
 root = Tk()
 app = myGUI(root)
 root.wm_title("Tkinter window")
