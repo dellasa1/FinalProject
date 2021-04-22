@@ -1,3 +1,11 @@
+from datetime import datetime
+import random
+import pickle
+from tkinter import *
+import tkinter.messagebox
+global score
+score = 0
+
 #defines objects in the leaderboard list
 class Leaders:
     def __init__(self, name, score, date):
@@ -26,170 +34,110 @@ class PlayerScore:
         return 'Name: ' + self.name + \
             '\nScore: ' + self.score + \
                 '\nDate: ' + self.date
+#This gui helps to display the game in a user interface
+#First initialize creates a dropdown menu
+class myGUI(Frame):
+    def __init__(self, master=None):
+        Frame.__init__(self, master)
+        self.master = master
 
-from datetime import datetime
-import random
-import pickle
+        menu = Menu(self.master)
+        self.master.config(menu=menu)
 
-play = 1
-leader = 2
-player = 3
-playerSpec = 4
-EXIT = 5
-#files to store information in
-topFile = 'leaderboard4.dat'
-playerFile = 'playerStat4.dat'
+        fileMenu = Menu(menu)
+        fileMenu.add_command(label="Play", command=self.game)
+        fileMenu.add_command(label="Exit", command=self.master.destroy)
+        menu.add_cascade(label="File", menu=fileMenu)
+#helps to display score after playing the game
+        self.frame = tkinter.Frame(self.master)
 
-def main():
-    #gets lists from binary files
-    leadList = getLeader()
-    playHigh = getPlayerHigh()
-    
-    choice = 0
-    while choice != EXIT:
-        choice = getChoice()
-        if choice == play:
-            leadList, playHigh = playGame(leadList, playHigh)#
-        if choice == leader:
-            showLeader(leadList)
-        if choice == player:
-            playerHigh(playHigh)
-        if choice == playerSpec:
-            playerSpec(playHigh)
-    saveLeaders(leadList)
-    saveplayHigh(playHigh)
+        self.var = tkinter.StringVar()
+        self.score = tkinter.Label(self.frame, textvariable=self.var)
 
-def getLeader():
-    try:
-        infile = open(topFile, 'rb')
-        leadList = pickle.load(infile)
-        infile.close()
-    except:
-        leadList = []
-    return leadList
+        self.score.pack(side='left')#close, ask hardy to look at it
 
-def getPlayerHigh():
-    try:
-        infile = open(playerFile, 'rb')
-        playHigh = pickle.load(infile)
-        print(playHigh)
-        infile.close()
-    except:
-        playHigh = {}
-    return playHigh
-    
-#Gives user a choice for what to make the program do
-def getChoice():
-    print()
-    print('1. Play the game')
-    print('2. View the leaderboard')
-    print('3. View all players high scores')
-    print("4. Retrieve a specific player's high score")
-    print('5. Exit the program')
-    print()
-    
-    choice = int(input('Enter the number for an option above: '))
-    while choice < play or choice > EXIT:
-        choice = int(input('Enter a valid option: '))
-    return choice
+        self.frame.pack()
+#Gets user name and goes to game
+    def game(self):
+        self.gameWindow = tkinter.Tk()
+
+        self.frame1 = tkinter.Frame(self.gameWindow)
+        self.frame3 = tkinter.Frame(self.gameWindow)
+
+        self.getName = tkinter.Label(self.frame1, text='Enter player name (or nickname):')
+        self.namein = tkinter.Entry(self.frame1, width=12)
+
+
+        self.getName.pack(side='left')
+        self.namein.pack(side='left')
         
-#plays the game
-def playGame(leadList, playHigh):
-    score = 0
-    numObjects = 0
-    playing = True
-    name = input('Enter player name (or nickname):')
-    while playing:
-        flip = input("Enter 'heads' or 'tails': ")
+        self.flipGo = tkinter.Button(self.frame3, text="Guess coin", command=self.getCoin)
+
+        self.flipGo.pack(side='left')
+        
+        self.frame1.pack()
+        self.frame3.pack()
+#guess the coin and goes to check if it's right
+    def getCoin(self):
+        self.getCoinWindow = tkinter.Tk()
+        
+        self.coinFrame = tkinter.Frame(self.getCoinWindow)
+
+        self.coinFlip = tkinter.Label(self.coinFrame, text="Enter 'heads' or 'tails':")
+        self.coinFlipGet = tkinter.Entry(self.coinFrame, width=5)
+
+        self.coinFlip.pack(side='left')
+        self.coinFlipGet.pack(side='left')
+
+        self.coinNext = tkinter.Frame(self.getCoinWindow)
+
+        self.coinFlipGo = tkinter.Button(self.coinNext, text='Check', command=self.check)
+        self.coinFlipGo.pack(side='left')
+
+        self.coinFrame.pack()
+        self.coinNext.pack()
+#this checks to see if the guess is correct
+#I'm trying to have it use a while loop but it hasn't been liking it
+    def check(self):
+            
+        score = 0
+        flip = self.coinFlipGet.get()
+        
         coin = random.randint(1, 2)
-        print(coin)
+        
         if flip == 'heads':
             if coin == 1:
-                print("That's correct!")
+                tkinter.messagebox.showinfo("That's correct!")
+                
                 score+=1
             elif coin == 2:
-                print("That's incorrect!")
+                tkinter.messagebox.showinfo("That's incorrect!")
+                
                 playing = False
+                self.gameWindow.destroy()
         elif flip == 'tails':
             if coin == 1:
-                print("That's incorrect!")
+                tkinter.messagebox.showinfo("That's incorrect!")
+                
                 playing = False
+                self.gameWindow.destroy()
             elif coin == 2:
-                print("That's correct!")
+                tkinter.messagebox.showinfo("That's correct!")
+                
                 score+=1
-        else:
-            print('Try Again')
-    now = datetime.now()
-    print()
-    date = str(now.strftime("%I:%M%p on %B %d, %Y"))
-    score = str(score)
-#adds info and updates high score for each player
-    playClass = PlayerScore(name, score, date)
-    if name not in playHigh:
-        playHigh[name] = playClass
-        print('You have a high score')
-    else:
-        if score > playHigh[name].score:
-            #del playHigh[name]
-            playHigh[name] = playClass
-            print('You have a NEW high score')
-
-    #Prints info and adds it to the list
-    print('Name: ', name, '\nScore: ',
+        #else:
+            #tkinter.messagebox.showinfo("Try again")
+#This returns the info to the original window to display
+        now = datetime.now()
+        print()
+        date = str(now.strftime("%I:%M%p on %B %d, %Y"))
+        score = str(score)
+        name = self.namein.get()
+        self.temp = ('Name: ', name, '\nScore: ',
           score, '\nDate: ', date)
-    for x in leadList:#
-        numObjects += 1#
-    if numObjects < 5:#
-        temp = Leaders(name, score, date)
-        leadList.append(temp)
-        print('You are one of the first people on the leaderboard')
-
-    #add it, order it, then remove min
-    else:
-        tempList = []
-        for x in leadList:
-            tempList += x.score
-        
-        if score >= min(tempList):
-            temp = Leaders(name, score, date)
-            leadList.append(temp)
-            print('You made the leaderboard')
-            leadList = sort(leadList)
-            del leadList[5:]
-        else:
-            print("You didn't make the leaderboard")        
-
-    return leadList, playHigh
-#Displays the leaderboard
-def showLeader(leadList):
-    leadList = sort(leadList)
-    numbers = ['1st', '2nd', '3rd', '4th', '5th']
-    for x in leadList:
-        print(numbers[0], ': ')
-        del numbers[0]
-        print(f'Name: {x.name}\nScore: {x.score}\nDate: {x.date}')
-        print()
-
-def sort(leadList):
-    leadList = sorted(leadList, key=lambda x: x.score, reverse=True)
-    return leadList
-#Displays high score for each player
-def playerHigh(playHigh):
-    for x in playHigh:
-        print()
-        print(playHigh.get(x, 'Invalid'))
-        print()
-
-#Gets a specific player's high score
-#def playerSpec():
-
-def saveLeaders(leadList):
-    outFile = open(topFile, 'wb')
-    pickle.dump(leadList, outFile)
-    outFile.close()
-#stores the list and dictionary in separate files
-def saveplayHigh(playHigh):
-    outFile = open(playerFile, 'wb')
-    pickle.dump(playHigh, outFile)
-    outFile.close()
-main()
+        self.var.set(str(self.temp))
+#Helps to set up dropdown menu in original window
+root = Tk()
+app = myGUI(root)
+root.wm_title("Tkinter window")
+root.mainloop()
