@@ -125,8 +125,8 @@ class myGUI(Frame):
                 tkinter.messagebox.showinfo("That's correct!")
                 
                 score+=1
-        #else:
-            #tkinter.messagebox.showinfo("Try again")
+        else:
+            tkinter.messagebox.showinfo("Try again")
 #This returns the info to the original window to display
         now = datetime.now()
         print()
